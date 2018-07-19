@@ -5,8 +5,11 @@ import java.awt.*;
  * Created by alxye on 18-Jul-18.
  */
 public class Main {
-    public static int HEIGHT = 800;
-    public static int WIDTH = 1000;
+    private static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+    public static int HEIGHT = (int) screenSize.getHeight();
+    public static int WIDTH = (int) screenSize.getWidth();
+
     public Main() {
         JFrame frame = new JFrame();
         frame.setTitle("Walrus Game");
@@ -18,9 +21,7 @@ public class Main {
         frame.setSize(WIDTH, HEIGHT);
         frame.setVisible(true);
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        HEIGHT = (int) screenSize.getHeight();
-        WIDTH = (int) screenSize.getWidth();
+
     }
     public static void main(String[] args) {
         new Main();

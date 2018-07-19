@@ -50,6 +50,6 @@ public class Player implements Shape {
 
     @Override
     public void draw(Graphics2D gr) {
-        gr.drawRect(Main.WIDTH/2-this.size/2,Main.HEIGHT/2-this.size/2,size,size);
+        gr.drawRect(Content.XPlayerOffset,Content.YPlayerOffset,this.size,this.size);
     }
 }

@@ -10,11 +10,23 @@ import java.awt.image.BufferedImage;
 
 public class Content extends JPanel implements ActionListener, KeyListener, MouseListener {
     private static Timer t;
-    public static Player player = new Player(400,0,550);
+    public static int tileSize = 70;
+
+    public static Player player = new Player(0,0,tileSize);
     private static float filterOpacity = 0.5f;
     public static Filter filter = new Filter(new Color(0.2f, 0.5f, 1.0f, filterOpacity));
 
-    public static float tileSize = 25;
+    private static int renderDistanceX = 13;
+    private static int renderDistanceY = 7;
+
+    private static int XGridSize = (int) (tileSize * Levels.level1[0].length);
+    private static int YGridSize = (int) (tileSize * Levels.level1.length);
+    public static int YOffset = (int) ((Main.HEIGHT + 8 * tileSize) / 2 - YGridSize + tileSize);
+    public static int XOffset = Main.WIDTH / 2 - XGridSize / 2;
+
+    public static int XPlayerOffset = Main.WIDTH / 2 - player.getSize() / 2;
+    public static int YPlayerOffset = Main.HEIGHT / 2 - player.getSize() / 2;
+
 
 
     public Content() {
@@ -28,17 +40,45 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     }
 
     public void paintComponent(Graphics g) {
+        for (int i = 0; i < Levels.level1.length; i++) {
+            for (int j = 0; j < Levels.level1[i].length; j++) {
+                if(j+renderDistanceX > Math.abs(getCurrentLocationX()) && j-renderDistanceX < Math.abs(getCurrentLocationX()) &&
+                        i+renderDistanceY > Math.abs(getCurrentLocationY()) && i-renderDistanceY < Math.abs(getCurrentLocationY())) {
+                    g.drawRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
+                }
+            }
+        }
         Graphics2D graphics = (Graphics2D) g;
         player.draw(graphics);
         filter.draw(graphics);
 
+
+
+    }
+    public static int getCurrentLocationY() {
+        //YOffset - YPlayerOffset - literal cartesian displacement
+        return (YOffset - YPlayerOffset-tileSize/2)/tileSize; //Y
+    }
+    public static int getCurrentLocationX() {
+        //XOffset - XPlayerOffset - literal cartesian displacement
+        return (XOffset - XPlayerOffset-tileSize/2)/tileSize; //X
+    }
+    public static int getTileType(int x, int y) {
+        return Levels.level1[Math.abs(y)][Math.abs(x)];
+
+        /*catch (ArrayIndexOutOfBoundsException e) {
+            gameOver();
+            resetPos();
+            return 0;
+        }*/
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 //        System.out.println(player.getY());
-        filter.setColor(new Color(0.2f, 0.5f,1.0f-((float)player.getY()/100000f), filterOpacity));
+        filter.setColor(new Color(0.0f, 0.0f,0.8f-((float)YOffset/10000f), filterOpacity));
 //        System.out.println(((float)player.getY()/1000f));
+        System.out.println(Math.abs(getCurrentLocationY()) + " " + Math.abs(getCurrentLocationX()));
         repaint();
     }
 
@@ -50,13 +90,14 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     @Override
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_DOWN)
-            player.setY(player.getY()+100);
+            YOffset-=10;
         else if(e.getKeyCode() == KeyEvent.VK_UP)
-            player.setY(player.getY()-10);
+            YOffset+=10;
         else if(e.getKeyCode() == KeyEvent.VK_RIGHT)
-            player.setX(player.getX()+10);
+            XOffset-=10;
         else if(e.getKeyCode() == KeyEvent.VK_LEFT)
-            player.setX(player.getX()-10);
+            XOffset+=10;
+
 
     }
 
