@@ -31,7 +31,36 @@ public class Player implements Shape {
     public void setY(int y) {
         this.y = y;
     }
-
+    public int getLowerLeftX() {
+        return Content.XPlayerOffset;
+    }
+    public int getLowerLeftY() {
+        return Content.YPlayerOffset+this.size;
+    }
+    public int getLowerRightX() {
+        return Content.XPlayerOffset+this.size;
+    }
+    public int getLowerRightY() {
+        return Content.YPlayerOffset+this.size;
+    }
+    public int getUpperLeftX() {
+        return Content.XPlayerOffset;
+    }
+    public int getUpperLeftY() {
+        return Content.YPlayerOffset;
+    }
+    public int getUpperRightX() {
+        return Content.XPlayerOffset+this.size;
+    }
+    public int getUpperRightY() {
+        return Content.YPlayerOffset;
+    }
+    public int getCenterX() {
+        return Content.XPlayerOffset+this.size/2;
+    }
+    public int getCenterY() {
+        return Content.YPlayerOffset+this.size/2;
+    }
     public BufferedImage getSkin() {
         return skin;
     }

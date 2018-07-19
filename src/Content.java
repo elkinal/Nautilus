@@ -12,7 +12,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     private static Timer t;
     public static int tileSize = 70;
 
-    public static Player player = new Player(0,0,tileSize);
+    public static Player player = new Player(0,0,50);
     private static float filterOpacity = 0.5f;
     public static Filter filter = new Filter(new Color(0.2f, 0.5f, 1.0f, filterOpacity));
 
@@ -26,7 +26,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     public static int XPlayerOffset = Main.WIDTH / 2 - player.getSize() / 2;
     public static int YPlayerOffset = Main.HEIGHT / 2 - player.getSize() / 2;
-
+    private static int depth = YOffset;
 
 
     public Content() {
@@ -51,17 +51,25 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         Graphics2D graphics = (Graphics2D) g;
         player.draw(graphics);
         filter.draw(graphics);
+        graphics.setColor(Color.black);
+        graphics.drawString("Depth: " + depth, Main.WIDTH-70, 20);
 
-
-
+        //drawing various markers
+        graphics.setColor(Color.green);
+        graphics.drawRect(player.getCenterX(), player.getCenterY(), 1, 1);
+        /*graphics.drawRect(Content.XPlayerOffset,Content.YPlayerOffset,1,1); //upper left corner
+        graphics.drawRect(Content.XPlayerOffset,Content.YPlayerOffset+player.getSize(),1,1); //lower left corner
+        graphics.drawRect(Content.XPlayerOffset+player.getSize(),Content.YPlayerOffset,1,1); //upper right corner
+        graphics.drawRect(Content.XPlayerOffset+player.getSize(),Content.YPlayerOffset+player.getSize(),1,1); //lower right corner
+        graphics.drawRect(Content.XPlayerOffset+player.getSize()/2,Content.YPlayerOffset+player.getSize()/2,1,1); //center*/
     }
     public static int getCurrentLocationY() {
         //YOffset - YPlayerOffset - literal cartesian displacement
-        return (YOffset - YPlayerOffset-tileSize/2)/tileSize; //Y
+        return (YOffset - YPlayerOffset-player.getSize()/2)/tileSize; //Y
     }
     public static int getCurrentLocationX() {
         //XOffset - XPlayerOffset - literal cartesian displacement
-        return (XOffset - XPlayerOffset-tileSize/2)/tileSize; //X
+        return (XOffset - XPlayerOffset-player.getSize()/2)/tileSize; //X
     }
     public static int getTileType(int x, int y) {
         return Levels.level1[Math.abs(y)][Math.abs(x)];
@@ -72,6 +80,9 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             return 0;
         }*/
     }
+    private void update() {
+        depth = YOffset;
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -79,6 +90,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         filter.setColor(new Color(0.0f, 0.0f,0.8f-((float)YOffset/10000f), filterOpacity));
 //        System.out.println(((float)player.getY()/1000f));
         System.out.println(Math.abs(getCurrentLocationY()) + " " + Math.abs(getCurrentLocationX()));
+        update();
         repaint();
     }
 
