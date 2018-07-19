@@ -9,11 +9,31 @@ public class Player implements Shape {
     private int y;
     private int size;
     private BufferedImage skin;
+    private float velX;
+    private float velY;
 
-    public Player(int x, int y, int size) {
+    public Player(int x, int y, int size, float velX, float velY) {
         this.x = x;
         this.y = y;
         this.size = size;
+        this.velX = velX;
+        this.velY = velY;
+    }
+
+    public float getVelX() {
+        return velX;
+    }
+
+    public void setVelX(float velX) {
+        this.velX = velX;
+    }
+
+    public float getVelY() {
+        return velY;
+    }
+
+    public void setVelY(float velY) {
+        this.velY = velY;
     }
 
     public int getX() {
