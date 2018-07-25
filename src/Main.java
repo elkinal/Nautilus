@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * Created by alxye on 18-Jul-18.
@@ -20,7 +21,11 @@ public class Main {
         frame.setUndecorated(true);
         frame.setSize(WIDTH, HEIGHT);
         frame.setVisible(true);
-
+        //setting a blank cursor
+        BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+                cursorImg, new Point(0, 0), "blank cursor");
+        frame.getContentPane().setCursor(blankCursor);
 
     }
     public static void main(String[] args) {
