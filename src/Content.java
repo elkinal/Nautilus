@@ -146,6 +146,13 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D graphics = (Graphics2D) g;
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Set anti-alias for text
+        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
         for (int i = 0; i < currentLevel.getContent().length; i++) {
             for (int j = 0; j < currentLevel.getContent()[i].length; j++) {
                 if(j+renderDistanceX > Math.abs(getCurrentLocationX()) && j-renderDistanceX < Math.abs(getCurrentLocationX()) &&
@@ -166,6 +173,9 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                 }
             }
         }
+
+
+
         graphics.setFont(fontSmall); //need to fix this
         if(depth < -200)
             graphics.setColor(Color.white);
@@ -178,7 +188,22 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         graphics.setColor(Color.green);
         player.draw(graphics);
         graphics.drawRect(player.getCenterX(), player.getCenterY(), 1, 1);
-        filter.draw(graphics);
+        if(player.isTorchStatus()) {
+            Point2D center = new Point2D.Float(player.getCenterX(), player.getCenterY());
+            float[] distance = {0.0f, 1.0f};
+            Color[] colors = {new Color(1.0f, 1.0f, 0.0f, 0.0f), filter.getColor()};
+            graphics.setColor(Color.red);
+            RadialGradientPaint p = new RadialGradientPaint(center, 300, distance, colors);
+            //torch status regulated here
+            graphics.setPaint(p);
+            graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1)); // set this to .95f
+//            graphics.setColor(filter.getColor());
+            graphics.fillRect(0, 0, Main.WIDTH, Main.HEIGHT);
+
+        }
+        else {
+            filter.draw(graphics);
+        }
 
 
 
@@ -206,9 +231,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         graphics.drawRect(Content.XPlayerOffset+player.getSize()/2,Content.YPlayerOffset+player.getSize()/2,1,1); //center*/
 
         //torch status regulated here
-        if(player.isTorchStatus()) {
-            System.out.println("The torch is on");
-        }
+
         graphics.dispose();
     }
     public static int getCurrentLocationY() {
@@ -243,7 +266,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         else
             filter.setColor(new Color(0.0f, 0.0f, 0.0f, 0.98f));
 //        System.out.println(Math.abs(getCurrentLocationX()) + "x" + Math.abs(getCurrentLocationY()));
-        System.out.println(depth);
+//        System.out.println(depth);
     }
     private void limitCheck() {
         if(player.getVelX() > player.getMaxSpeed())
