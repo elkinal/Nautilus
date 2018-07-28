@@ -7,6 +7,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by alxye on 16-May-18.
@@ -43,6 +46,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     private static BufferedImage mediumPlant;
     private static BufferedImage mediumPlant2;
 
+    private int timerValue = 0;
 
     private Font font = new Font("Sans-Serif", Font.PLAIN, 40);
     private Font fontSmall = new Font("Roboto", Font.PLAIN, 30); //sort out the fonts and make them compatible with most computers
@@ -74,6 +78,14 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         loadImages();
         fillTerrain();
         randomizeTerrain();
+
+        //attempting to create a timer that will decrease the player's oxygen
+/*        Runnable runnable = () -> System.out.println("Hello !!");
+
+        ScheduledExecutorService service = Executors
+                .newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);*/
+        //delete this later if you find a better alternatives
     }
 
     private void fillTerrain() {
@@ -182,6 +194,8 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                         i+renderDistanceY > Math.abs(getCurrentLocationY()) && i-renderDistanceY < Math.abs(getCurrentLocationY())) {
                     /*if(currentLevel.getContent()[i][j] == -1)
                          g.drawImage(waterLight, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);*/
+                    if(currentLevel.getContent()[i][j] == -1)
+                         g.fillRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
                     if(currentLevel.getContent()[i][j] == 1)
                         graphics.drawImage(sandStylized, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
                     if(currentLevel.getContent()[i][j] == 2)
@@ -210,13 +224,12 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         //drawing various markers
         graphics.setColor(Color.green);
         player.draw(graphics);
-        graphics.drawRect(player.getCenterX(), player.getCenterY(), 1, 1);
         if(player.isTorchStatus()) {
             Point2D center = new Point2D.Float(player.getCenterX(), player.getCenterY());
             float[] distance = {0.0f, 1.0f};
             Color[] colors = {new Color(1.0f, 1.0f, 0.0f, 0.0f), filter.getColor()};
-            graphics.setColor(Color.red);
             RadialGradientPaint p = new RadialGradientPaint(center, 300, distance, colors);
+
             //torch status regulated here
             graphics.setPaint(p);
             graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1)); // set this to .95f
@@ -292,30 +305,35 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 //        System.out.println(((float)player.getY()/1000f));
 //        System.out.println(Math.abs(getCurrentLocationY()) + " " + Math.abs(getCurrentLocationX()));
 //        System.out.println(getTileType(getCurrentLocationX(), getCurrentLocationY()));
-        XOffset += player.getVelX();
-        YOffset += player.getVelY();
+
         limitCheck();
         update();
 
         //Player collision detection ___________________________________________________________________________
         //Collision detection system the same as in older project - needs more testing as there may be some issues...
         //need to make sure that the velocity of the player does not increase by such a large amount when a collision is triggered
-
+        //There is an issue when the player becomes trapped in the top right corners of structures
         if(getTileType((XOffset - XPlayerOffset)/tileSize,(YOffset - YPlayerOffset-player.getSize())/tileSize) == 1 ||
                 getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize,(YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
-            player.setVelY(1);
+            player.setVelY(0);
+            YOffset += 1;
         }
         else if(getTileType((XOffset - XPlayerOffset)/tileSize,(YOffset - YPlayerOffset)/tileSize) == 1 ||
                 getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize,(YOffset - YPlayerOffset)/tileSize) == 1) {
-            player.setVelY(-1);
+            player.setVelY(0);
+            YOffset -= 1;
         }
         if(getTileType((XOffset - XPlayerOffset)/tileSize, (YOffset - YPlayerOffset)/tileSize) == 1 ||
                 getTileType((XOffset - XPlayerOffset)/tileSize, (YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
-            player.setVelX(-1);
+            player.setVelX(0);
+            XOffset-=1;
+
         }
         else if(getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize, (YOffset - YPlayerOffset)/tileSize) == 1 ||
                 getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize, (YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
-            player.setVelX(1);
+            player.setVelX(0);
+            XOffset+=1;
+
         }
 
 
@@ -339,8 +357,25 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == -1 && player.getOxygen() != player.getMaxOxygen()) {
             player.setOxygen(player.getOxygen()+1);
         }
+        XOffset += player.getVelX();
+        YOffset += player.getVelY();
 
+        timerOperations();
         repaint();
+
+
+    }
+
+    private void timerOperations() {
+        //timer activation
+        timerValue++;
+        if(timerValue % 200 == 0) {
+            System.out.println(timerValue); //make sure that this does not overflow
+            if(depth > -100)
+                player.setOxygen(player.getOxygen()-1);
+            if(depth < -100)
+                 player.setOxygen(player.getOxygen()-2);
+        }
     }
 
     @Override

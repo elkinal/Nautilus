@@ -10,9 +10,10 @@ public class Main {
 
     public static int HEIGHT = (int) screenSize.getHeight();
     public static int WIDTH = (int) screenSize.getWidth();
+    public static JFrame frame = new JFrame();
+
 
     public Main() {
-        JFrame frame = new JFrame();
         frame.setTitle("Walrus Game");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.add(new Content());
