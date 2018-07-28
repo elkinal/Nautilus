@@ -1,12 +1,15 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
 /**
  * Created by alxye on 17-Jul-18.
  */
-public class Player implements Shape {
+public class Player implements Shape, Storage {
     private int x; //center location
     private int y;
     private int size;
@@ -28,8 +31,6 @@ public class Player implements Shape {
         this.velX = velX;
         this.velY = velY;
         this.showInventory = showInventory;
-        startingInventory.add(new InventoryItem("flotation device", 2)); //this is inefficient - remove later and make a library of InventoryItems
-        startingInventory.add(new InventoryItem("fabricator", 1));
         this.inventory = new Inventory(startingInventory);
         this.maxSpeed = maxSpeed;
         this.oxygen = oxygen;
@@ -156,7 +157,7 @@ public class Player implements Shape {
 
     /*    public ArrayList<InventoryItem> getCraftableItems() {
         ArrayList<InventoryItem> availableItems = new ArrayList<>();
-        Craftable oxygen = new Craftable("Oxygen", 1, new InventoryItem[]{new InventoryItem("Seaweed", 1), new InventoryItem("Coral", 1)});
+        CraftMenu oxygen = new CraftMenu("Oxygen", 1, new InventoryItem[]{new InventoryItem("Seaweed", 1), new InventoryItem("Coral", 1)});
         boolean craftStatus = true;
         for (int i = 0; i < this.inventory.getItems().size()-1; i++) {
             for (int j = 0; j < oxygen.getRequirements().length-1; j++) {
@@ -205,5 +206,26 @@ public class Player implements Shape {
     @Override
     public void draw(Graphics2D gr) {
         gr.fillRect(Content.XPlayerOffset,Content.YPlayerOffset,this.size,this.size);
+    }
+
+    @Override
+    public void drawInventory(Graphics2D gr) {
+        gr.setColor(new Color(0.3f, 0.5f, 0.7f, 0.8f));
+        gr.fillRect(Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700);
+        gr.setColor(Color.green);
+        for (int i = 0; i < this.inventory.getItems().size(); i++) {
+            /*gr.drawString(
+                    (this.inventory.getItems().get(i).getImagePath() +
+                    " x" +
+                    this.inventory.getItems().get(i).getName()), 650, i*50 + Main.HEIGHT/2-300);*/
+
+            try {
+                gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH/2-350 + i*100, Main.HEIGHT/2-350, 100, 100, null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 90 + i*100, Main.HEIGHT/2-350 + 15);
+
+        }
     }
 }

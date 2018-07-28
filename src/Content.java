@@ -22,6 +22,19 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     public static Level currentLevel = Levels.levelOne;
 
+
+
+    //experimental - "files"
+
+    public ItemLibrary itemLibrary = new ItemLibrary(false);
+
+    public static File coralFile;
+    public static File seaweedFile;
+    public static File mediumPlantFile;
+    public static File mediumPlant2File;
+    public static File sandStylizedFile;
+
+
     private static BufferedImage seaweed;
     private static BufferedImage sandMedium;
     private static BufferedImage sandStylized;
@@ -29,6 +42,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     private static BufferedImage waterLight;
     private static BufferedImage mediumPlant;
     private static BufferedImage mediumPlant2;
+
 
     private Font font = new Font("Sans-Serif", Font.PLAIN, 40);
     private Font fontSmall = new Font("Roboto", Font.PLAIN, 30); //sort out the fonts and make them compatible with most computers
@@ -89,13 +103,22 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     private void loadImages() {
         try {
-            seaweed = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\seaweed.png"));
-            sandMedium = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\sand_medium.jpg"));
-            sandStylized = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\sand_tile.png"));
-            coralStylized = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\coral.png"));
-            waterLight = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\water_light.jpg"));
-            mediumPlant = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\medium_plant.png"));
-            mediumPlant2 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\medium_plant_2.png"));
+
+            coralFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\coral.png");
+            seaweedFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\seaweed.png");
+            mediumPlantFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\medium_plant.png");
+            mediumPlant2File = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\medium_plant_2.png");
+            sandStylizedFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\sand_medium.jpg");
+
+            seaweed = ImageIO.read(seaweedFile);
+            sandStylized = ImageIO.read(sandStylizedFile);
+            coralStylized = ImageIO.read(coralFile);
+            mediumPlant = ImageIO.read(mediumPlantFile);
+            mediumPlant2 = ImageIO.read(sandStylizedFile);
+
+            itemLibrary = new ItemLibrary(true);
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -157,8 +180,8 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             for (int j = 0; j < currentLevel.getContent()[i].length; j++) {
                 if(j+renderDistanceX > Math.abs(getCurrentLocationX()) && j-renderDistanceX < Math.abs(getCurrentLocationX()) &&
                         i+renderDistanceY > Math.abs(getCurrentLocationY()) && i-renderDistanceY < Math.abs(getCurrentLocationY())) {
-                    if(currentLevel.getContent()[i][j] == -1)
-                         g.drawImage(waterLight, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
+                    /*if(currentLevel.getContent()[i][j] == -1)
+                         g.drawImage(waterLight, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);*/
                     if(currentLevel.getContent()[i][j] == 1)
                         graphics.drawImage(sandStylized, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
                     if(currentLevel.getContent()[i][j] == 2)
@@ -209,30 +232,11 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
 
         //control the view of the inventory
-
         if(player.getShowInventory()) {
-            graphics.setColor(new Color(0.3f, 0.5f, 0.7f, 0.8f));
-            graphics.fillRect(Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700);
-            graphics.setColor(Color.green);
-            for (int i = 0; i < player.getInventory().getItems().size(); i++) {
-                graphics.drawString((player.getInventory().getItems().get(i).getName() + " x" + player.getInventory().getItems().get(i).getAmount()), 650, i*50 + Main.HEIGHT/2-300);
-            }
-//            System.out.println(player.getCraftableItems().size());
-//            for (int i = 0; i < player.getCraftableItems().size(); i++) {
-//                graphics.drawString((player.getCraftableItems().get(i).getName() + " x" + player.getCraftableItems().get(i).getAmount()), 650, i*50 + Main.HEIGHT/2-300);
-//            }
-
-
+            player.drawInventory(graphics);
         }
-        /*graphics.drawRect(Content.XPlayerOffset,Content.YPlayerOffset,1,1); //upper left corner
-        graphics.drawRect(Content.XPlayerOffset,Content.YPlayerOffset+player.getSize(),1,1); //lower left corner
-        graphics.drawRect(Content.XPlayerOffset+player.getSize(),Content.YPlayerOffset,1,1); //upper right corner
-        graphics.drawRect(Content.XPlayerOffset+player.getSize(),Content.YPlayerOffset+player.getSize(),1,1); //lower right corner
-        graphics.drawRect(Content.XPlayerOffset+player.getSize()/2,Content.YPlayerOffset+player.getSize()/2,1,1); //center*/
 
-        //torch status regulated here
-
-        graphics.dispose();
+        graphics.dispose(); //optional?
     }
     public static int getCurrentLocationY() {
         //YOffset - YPlayerOffset - literal cartesian displacement
@@ -316,19 +320,19 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
 
         if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 2) {
-            player.getInventory().addItems(new InventoryItem("Seaweed", 1));
+            player.getInventory().addItems(itemLibrary.getInventory()[5]);
             currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
         }
         if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 3) {
-            player.getInventory().addItems(new InventoryItem("Coral", 1));
+            player.getInventory().addItems(itemLibrary.getInventory()[0]);
             currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
         }
         if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 4) {
-            player.getInventory().addItems(new InventoryItem("Medium Plant 1", 1));
+            player.getInventory().addItems(itemLibrary.getInventory()[3]);
             currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
         }
         if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 5) {
-            player.getInventory().addItems(new InventoryItem("Medium Plant 2", 1));
+            player.getInventory().addItems(itemLibrary.getInventory()[4]);
             currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
         }
         //refilling oxygen if the player is in the presence of air
