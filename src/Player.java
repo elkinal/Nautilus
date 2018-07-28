@@ -213,18 +213,32 @@ public class Player implements Shape, Storage {
         gr.setColor(new Color(0.3f, 0.5f, 0.7f, 0.8f));
         gr.fillRect(Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700);
         gr.setColor(Color.green);
+        int control = 0;
+        int count = 0;
         for (int i = 0; i < this.inventory.getItems().size(); i++) {
             /*gr.drawString(
                     (this.inventory.getItems().get(i).getImagePath() +
                     " x" +
                     this.inventory.getItems().get(i).getName()), 650, i*50 + Main.HEIGHT/2-300);*/
 
+
+
             try {
-                gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH/2-350 + i*100, Main.HEIGHT/2-350, 100, 100, null);
+//                    gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH / 2 - 350 + i * 100, Main.HEIGHT / 2 - 350 + 100 * control, 100, 100, null);
+
+                if(i % 2 == 0) {
+                    control++;
+                    count = 0;
+                }
+                else count++;
+
+                gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH/2-350 + count*100, Main.HEIGHT/2-350 + 100*control, 100, 100, null);
+//                control++;
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 90 + i*100, Main.HEIGHT/2-350 + 15);
+            gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 80 + i*100, Main.HEIGHT/2-350 + 20);
 
         }
     }

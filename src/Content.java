@@ -114,7 +114,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             sandStylized = ImageIO.read(sandStylizedFile);
             coralStylized = ImageIO.read(coralFile);
             mediumPlant = ImageIO.read(mediumPlantFile);
-            mediumPlant2 = ImageIO.read(sandStylizedFile);
+            mediumPlant2 = ImageIO.read(mediumPlant2File);
 
             itemLibrary = new ItemLibrary(true);
 
@@ -154,7 +154,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                     if(randInt(0,5) == 2 && currentLevel.getContent()[i-1][j] != 1 && i > 100) {
                         if(randInt(0,1) == 1)
                             currentLevel.getContent()[i - 1][j] = 4;
-                        else if(randInt(0,1) == 1)
+                        else
                             currentLevel.getContent()[i - 1][j] = 5;
 
                     }
