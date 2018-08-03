@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
@@ -19,7 +20,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     private static Timer t;
     public static int tileSize = 70;
     private Random random = new Random();
-    public static Player player = new Player(0,0,50, 0f, 0f, false, 100f, 50, 100, false);
+    public static Player player = new Player(0,0,50, 0f, 0f, false, 100f, 50, 100, false, 0, 0);
     private static float filterOpacity = 0.3f;
     public static Filter filter = new Filter(new Color(0.0f, 0.0f, 1.0f, filterOpacity));
 
@@ -38,13 +39,13 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     public static File sandStylizedFile;
 
 
-    private static BufferedImage seaweed;
-    private static BufferedImage sandMedium;
-    private static BufferedImage sandStylized;
-    private static BufferedImage coralStylized;
-    private static BufferedImage waterLight;
-    private static BufferedImage mediumPlant;
-    private static BufferedImage mediumPlant2;
+    public static BufferedImage seaweed;
+    public static BufferedImage sandMedium;
+    public static BufferedImage sandStylized;
+    public static BufferedImage coralStylized;
+    public static BufferedImage waterLight;
+    public static BufferedImage mediumPlant;
+    public static BufferedImage mediumPlant2;
 
     private int timerValue = 0;
 
@@ -116,10 +117,10 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     private void loadImages() {
         try {
 
-            coralFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\coral.png");
+            coralFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\large_coral.png");
             seaweedFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\seaweed.png");
-            mediumPlantFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\medium_plant.png");
-            mediumPlant2File = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\medium_plant_2.png");
+            mediumPlantFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\cluster_coral.png");
+            mediumPlant2File = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\dead_coral.png");
             sandStylizedFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\sand_medium.jpg");
 
             seaweed = ImageIO.read(seaweedFile);
@@ -179,8 +180,8 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     }
 
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
         Graphics2D graphics = (Graphics2D) g;
+        super.paintComponent(graphics);
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -224,7 +225,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         //drawing various markers
         graphics.setColor(Color.green);
         player.draw(graphics);
-        if(player.isTorchStatus()) {
+        if(player.isTorchStatus()) { //the filter makes some game tiles blurry - // FIXME: 29-Jul-18 - HURRY UP
             Point2D center = new Point2D.Float(player.getCenterX(), player.getCenterY());
             float[] distance = {0.0f, 1.0f};
             Color[] colors = {new Color(1.0f, 1.0f, 0.0f, 0.0f), filter.getColor()};
@@ -297,22 +298,21 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
         if(player.getOxygen() > player.getMaxOxygen())
             player.setOxygen(player.getMaxOxygen());
+        if(player.getOxygen() < 0)
+            player.setOxygen(0);
+
+
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-//        System.out.println(player.getY());
-//        System.out.println(((float)player.getY()/1000f));
-//        System.out.println(Math.abs(getCurrentLocationY()) + " " + Math.abs(getCurrentLocationX()));
-//        System.out.println(getTileType(getCurrentLocationX(), getCurrentLocationY()));
 
-        limitCheck();
         update();
-
+//        System.out.println(player.getSelectedItems().getItems().size());
         //Player collision detection ___________________________________________________________________________
         //Collision detection system the same as in older project - needs more testing as there may be some issues...
-        //need to make sure that the velocity of the player does not increase by such a large amount when a collision is triggered
-        //There is an issue when the player becomes trapped in the top right corners of structures
+        //The player morphs into tiles if he is travelling at a very high speed. Fix this // FIXME: 31-Jul-18
+
         if(getTileType((XOffset - XPlayerOffset)/tileSize,(YOffset - YPlayerOffset-player.getSize())/tileSize) == 1 ||
                 getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize,(YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
             player.setVelY(0);
@@ -362,6 +362,8 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
         timerOperations();
         repaint();
+        limitCheck();
+
 
 
     }
@@ -370,12 +372,14 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         //timer activation
         timerValue++;
         if(timerValue % 200 == 0) {
-            System.out.println(timerValue); //make sure that this does not overflow
+//            System.out.println(timerValue); //make sure that this does not overflow
             if(depth > -100)
                 player.setOxygen(player.getOxygen()-1);
             if(depth < -100)
                  player.setOxygen(player.getOxygen()-2);
         }
+        if(player.getOxygen() == 0)
+            System.out.println("LOl u DIed M8ey");
     }
 
     @Override
@@ -412,6 +416,36 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         if(e.getKeyCode() == KeyEvent.VK_I) {
             player.toggleInventory();
         }
+
+        if(e.getKeyCode() == KeyEvent.VK_W)
+            player.setSelectedItemY(player.getSelectedItemY() - 1);
+        if(e.getKeyCode() == KeyEvent.VK_A)
+            player.setSelectedItemX(player.getSelectedItemX() - 1);
+        if(e.getKeyCode() == KeyEvent.VK_S)
+            player.setSelectedItemY(player.getSelectedItemY() + 1);
+        if(e.getKeyCode() == KeyEvent.VK_D)
+            player.setSelectedItemX(player.getSelectedItemX() + 1);
+        if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+//            System.out.println(player.getSelectedItemX() + 1 + " " + (player.getSelectedItemY() + 1));
+//            System.out.println("Tile Number" + (player.getSelectedItemY() * 5 + player.getSelectedItemX()));
+//            System.out.println(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName());
+//            int currentSelectedItem =
+            player.getSelectedItems().addItems(new InventoryItem(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName()
+                    ,
+                    1
+                    ,
+                    player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getImageFile()
+                    ));
+
+
+            System.out.println("Items in the currently selecting crafting menu");
+            System.out.println("There are " + player.getSelectedItems().getItems().size() + " items currently in the inventory");
+            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
+                System.out.println(player.getSelectedItems().getItems().get(i).getName() + player.getSelectedItems().getItems().get(i).getAmount());
+            }
+
+        }
+
 
 
     }

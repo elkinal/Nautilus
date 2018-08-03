@@ -22,7 +22,7 @@ public class Inventory {
     public void addItems(InventoryItem item) {
         boolean flag = false;
         for (int i = 0; i < items.size(); i++) {
-            if(items.get(i).getName() == item.getName()) {
+            if(items.get(i).getName().equals(item.getName())) {
                 items.get(i).amount++;
                 flag = true;
                 break;

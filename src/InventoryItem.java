@@ -1,5 +1,5 @@
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.awt.image.VolatileImage;
 
 /**
  * Created by alxye on 19-Jul-18.
@@ -8,18 +8,19 @@ public class InventoryItem {
     String name;
     int amount;
     InventoryItem[] ingredients;
-    String imagePath;
+    BufferedImage imageFile;
 
-    public InventoryItem(String name, int amount, String imagePath) {
+
+    public InventoryItem(String name, int amount, BufferedImage imageFile) {
         this.name = name;
         this.amount = amount;
-        this.imagePath = imagePath;
+        this.imageFile = imageFile;
     }
-    public InventoryItem(String name, int amount, String imagePath, InventoryItem[] ingredients) {
+    public InventoryItem(String name, int amount, BufferedImage imageFile, InventoryItem[] ingredients) {
         this.name = name;
         this.amount = amount;
         this.ingredients = ingredients;
-        this.imagePath = imagePath;
+        this.imageFile = imageFile;
     }
 
     public String getName() {
@@ -46,11 +47,11 @@ public class InventoryItem {
         this.ingredients = ingredients;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public BufferedImage getImageFile() {
+        return imageFile;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setImageFile(BufferedImage imageFile) {
+        this.imageFile = imageFile;
     }
 }

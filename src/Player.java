@@ -18,13 +18,17 @@ public class Player implements Shape, Storage {
     private float velY;
     private boolean showInventory;
     private ArrayList<InventoryItem> startingInventory = new ArrayList<>();
+    private ArrayList<InventoryItem> startingInventory2 = new ArrayList<>();
     private Inventory inventory;
+    private Inventory selectedItems;
     private float maxSpeed;
     private int oxygen;
     private int maxOxygen;
     private boolean torchStatus;
+    private int selectedItemX;
+    private int selectedItemY;
 
-    public Player(int x, int y, int size, float velX, float velY, boolean showInventory, float maxSpeed, int oxygen, int maxOxygen, boolean torchStatus) {
+    public Player(int x, int y, int size, float velX, float velY, boolean showInventory, float maxSpeed, int oxygen, int maxOxygen, boolean torchStatus, int selectedItemX, int selectedItemY) {
         this.x = x;
         this.y = y;
         this.size = size;
@@ -36,6 +40,9 @@ public class Player implements Shape, Storage {
         this.oxygen = oxygen;
         this.maxOxygen = maxOxygen;
         this.torchStatus = torchStatus;
+        this.selectedItemX = selectedItemX;
+        this.selectedItemY = selectedItemY;
+        this.selectedItems = new Inventory(startingInventory2);
     }
 
     public float getVelX() {
@@ -155,6 +162,30 @@ public class Player implements Shape, Storage {
         this.torchStatus = torchStatus;
     }
 
+    public int getSelectedItemX() {
+        return selectedItemX;
+    }
+
+    public void setSelectedItemX(int selectedItemX) {
+        this.selectedItemX = selectedItemX;
+    }
+
+    public int getSelectedItemY() {
+        return selectedItemY;
+    }
+
+    public void setSelectedItemY(int selectedItemY) {
+        this.selectedItemY = selectedItemY;
+    }
+
+    public Inventory getSelectedItems() {
+        return selectedItems;
+    }
+
+    public void setSelectedItems(Inventory selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
     /*    public ArrayList<InventoryItem> getCraftableItems() {
         ArrayList<InventoryItem> availableItems = new ArrayList<>();
         CraftMenu oxygen = new CraftMenu("Oxygen", 1, new InventoryItem[]{new InventoryItem("Seaweed", 1), new InventoryItem("Coral", 1)});
@@ -213,6 +244,23 @@ public class Player implements Shape, Storage {
         gr.setColor(new Color(0.3f, 0.5f, 0.7f, 0.8f));
         gr.fillRect(Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700);
         gr.setColor(Color.green);
+        //drawing the inventory grids
+
+
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                gr.drawRect(Main.WIDTH/2-350 + 440 + 70*k, Main.HEIGHT/2-350 + 50 + 70*j, 70, 70);
+            }
+        }
+        for (int j = 0; j < 8; j++) {
+            for (int k = 0; k < 5; k++) {
+                gr.drawRect(Main.WIDTH/2-350 + 50 + 70*k, Main.HEIGHT/2-350 + 50 + 70*j, 70, 70);
+            }
+        }
+        //drawing the item currently selected by the user
+        gr.drawOval(Main.WIDTH/2-350 + 50 + 70*this.selectedItemX, Main.HEIGHT/2-350 + 50 + 70*this.selectedItemY, 70, 70);
+
+
         int control = 0;
         int count = 0;
         for (int i = 0; i < this.inventory.getItems().size(); i++) {
@@ -223,22 +271,19 @@ public class Player implements Shape, Storage {
 
 
 
-            try {
+
 //                    gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH / 2 - 350 + i * 100, Main.HEIGHT / 2 - 350 + 100 * control, 100, 100, null);
 
-                if(i % 2 == 0) {
+                if(i % 5 == 0) {
                     control++;
                     count = 0;
                 }
                 else count++;
+                gr.drawImage(this.inventory.getItems().get(i).getImageFile(), Main.WIDTH/2-350 + 50 + count*70, Main.HEIGHT/2-350 - 20 + 70*control, 70, 70, null);
+                gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 25 + 80 + count*70, Main.HEIGHT/2-350 + 5 + 70*control);
+                //drawing currently selected grid
 
-                gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH/2-350 + count*100, Main.HEIGHT/2-350 + 100*control, 100, 100, null);
-//                control++;
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 80 + i*100, Main.HEIGHT/2-350 + 20);
 
         }
     }
