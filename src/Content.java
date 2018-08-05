@@ -417,15 +417,16 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             player.toggleInventory();
         }
 
-        if(e.getKeyCode() == KeyEvent.VK_W)
+        if(e.getKeyCode() == KeyEvent.VK_W && player.getSelectedItemY() > 0)
             player.setSelectedItemY(player.getSelectedItemY() - 1);
-        if(e.getKeyCode() == KeyEvent.VK_A)
+        if(e.getKeyCode() == KeyEvent.VK_A && player.getSelectedItemX() > 0)
             player.setSelectedItemX(player.getSelectedItemX() - 1);
-        if(e.getKeyCode() == KeyEvent.VK_S)
+        if(e.getKeyCode() == KeyEvent.VK_S && player.getSelectedItemY() < 7)
             player.setSelectedItemY(player.getSelectedItemY() + 1);
-        if(e.getKeyCode() == KeyEvent.VK_D)
+        if(e.getKeyCode() == KeyEvent.VK_D && player.getSelectedItemX() < 4)
             player.setSelectedItemX(player.getSelectedItemX() + 1);
         if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+
 //            System.out.println(player.getSelectedItemX() + 1 + " " + (player.getSelectedItemY() + 1));
 //            System.out.println("Tile Number" + (player.getSelectedItemY() * 5 + player.getSelectedItemX()));
 //            System.out.println(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName());
