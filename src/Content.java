@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,11 +27,11 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     public static Level currentLevel = Levels.levelOne;
 
-
+    private DisplayController displayController = DisplayController.GAME;
 
     //experimental - "files"
 
-    public ItemLibrary itemLibrary = new ItemLibrary(false);
+    public ItemLibrary itemLibrary = new ItemLibrary(false); // TODO: 08-Aug-18 Tidy This Up
 
     public static File coralFile;
     public static File seaweedFile;
@@ -161,7 +162,6 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                         else if(randInt(0,2) == 1) {
                             currentLevel.getContent()[i - 1][j] = 3;
                         }
-
                     }
                     //creating "medium plants"
                     if(randInt(0,5) == 2 && currentLevel.getContent()[i-1][j] != 1 && i > 100) {
@@ -169,7 +169,6 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                             currentLevel.getContent()[i - 1][j] = 4;
                         else
                             currentLevel.getContent()[i - 1][j] = 5;
-
                     }
                 }
             }
@@ -188,24 +187,24 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         // Set anti-alias for text
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
+    if(displayController == DisplayController.GAME) {
         for (int i = 0; i < currentLevel.getContent().length; i++) {
             for (int j = 0; j < currentLevel.getContent()[i].length; j++) {
-                if(j+renderDistanceX > Math.abs(getCurrentLocationX()) && j-renderDistanceX < Math.abs(getCurrentLocationX()) &&
-                        i+renderDistanceY > Math.abs(getCurrentLocationY()) && i-renderDistanceY < Math.abs(getCurrentLocationY())) {
+                if (j + renderDistanceX > Math.abs(getCurrentLocationX()) && j - renderDistanceX < Math.abs(getCurrentLocationX()) &&
+                        i + renderDistanceY > Math.abs(getCurrentLocationY()) && i - renderDistanceY < Math.abs(getCurrentLocationY())) {
                     /*if(currentLevel.getContent()[i][j] == -1)
                          g.drawImage(waterLight, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);*/
-                    if(currentLevel.getContent()[i][j] == -1)
-                         g.fillRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
-                    if(currentLevel.getContent()[i][j] == 1)
+                    if (currentLevel.getContent()[i][j] == -1)
+                        g.fillRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
+                    if (currentLevel.getContent()[i][j] == 1)
                         graphics.drawImage(sandStylized, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
-                    if(currentLevel.getContent()[i][j] == 2)
+                    if (currentLevel.getContent()[i][j] == 2)
                         graphics.drawImage(seaweed, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
-                    if(currentLevel.getContent()[i][j] == 3)
+                    if (currentLevel.getContent()[i][j] == 3)
                         graphics.drawImage(coralStylized, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
-                    if(currentLevel.getContent()[i][j] == 4)
+                    if (currentLevel.getContent()[i][j] == 4)
                         graphics.drawImage(mediumPlant, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
-                    if(currentLevel.getContent()[i][j] == 5)
+                    if (currentLevel.getContent()[i][j] == 5)
                         graphics.drawImage(mediumPlant2, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
 
                 }
@@ -213,19 +212,18 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         }
 
 
-
         graphics.setFont(fontSmall); //need to fix this
-        if(depth < -200)
+        if (depth < -200)
             graphics.setColor(Color.white);
         else
             graphics.setColor(Color.black);
-        graphics.drawString("Depth: " + depth, Main.WIDTH-200, 50);
-        graphics.drawString("Oxygen: " + player.getOxygen() + "/" + player.getMaxOxygen(), Main.WIDTH-250, 100);
+        graphics.drawString("Depth: " + depth, Main.WIDTH - 200, 50);
+        graphics.drawString("Oxygen: " + player.getOxygen() + "/" + player.getMaxOxygen(), Main.WIDTH - 250, 100);
 
         //drawing various markers
         graphics.setColor(Color.green);
         player.draw(graphics);
-        if(player.isTorchStatus()) { //the filter makes some game tiles blurry - // FIXME: 29-Jul-18 - HURRY UP
+        if (player.isTorchStatus()) { //the filter makes some game tiles blurry - // FIXME: 29-Jul-18 - HURRY UP
             Point2D center = new Point2D.Float(player.getCenterX(), player.getCenterY());
             float[] distance = {0.0f, 1.0f};
             Color[] colors = {new Color(1.0f, 1.0f, 0.0f, 0.0f), filter.getColor()};
@@ -237,18 +235,22 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 //            graphics.setColor(filter.getColor());
             graphics.fillRect(0, 0, Main.WIDTH, Main.HEIGHT);
 
-        }
-        else {
+        } else {
             filter.draw(graphics);
         }
 
 
-
-
-        //control the view of the inventory
-        if(player.getShowInventory()) {
+        if (player.getShowInventory()) {
             player.drawInventory(graphics);
         }
+
+    }
+    //control the view of the inventory // TODO: 06-Aug-18 make this look nice | add dialogs and options
+    if(displayController == DisplayController.MENU) {
+        graphics.drawImage(sandStylized, 0, 0, Main.WIDTH, Main.HEIGHT, null);
+        graphics.setFont(fontLarge);
+        graphics.drawString("Nautilus", Main.WIDTH/2 -200 , Main.HEIGHT/2);
+    }
 
         graphics.dispose(); //optional?
     }
@@ -431,19 +433,30 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 //            System.out.println("Tile Number" + (player.getSelectedItemY() * 5 + player.getSelectedItemX()));
 //            System.out.println(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName());
 //            int currentSelectedItem =
-            player.getSelectedItems().addItems(new InventoryItem(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName()
-                    ,
-                    1
-                    ,
-                    player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getImageFile()
-                    ));
-
-
-            System.out.println("Items in the currently selecting crafting menu");
-            System.out.println("There are " + player.getSelectedItems().getItems().size() + " items currently in the inventory");
-            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
-                System.out.println(player.getSelectedItems().getItems().get(i).getName() + player.getSelectedItems().getItems().get(i).getAmount());
+            if(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getAmount() > 0) {
+                player.getSelectedItems().addItems(new InventoryItem(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName()
+                        ,
+                        1
+                        ,
+                        player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getImageFile()
+                ));
+                player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).increaseAmount(-1);
             }
+            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
+                System.out.println(player.getSelectedItems().getItems().get(i).getName());
+            }
+            // FIXME: 05-Aug-18 Make sure that the item that has an "amount < 1" is removed
+            // FIXME: 05-Aug-18 Make sure that "player.selectedItems is compared to player.getItem.ingredients to check if an object can be crafted"
+       /*     for (int i = 0; i < itemLibrary.getInventory().length; i++) {
+                if(itemLibrary.getInventory()[i] != null) //check if itemlibrary item has parameter getinventory
+                    System.out.println(Arrays.toString(itemLibrary.getInventory()[i].getIngredients()));
+            }*/
+            
+
+
+/*            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
+                System.out.println(player.getSelectedItems().getItems().get(i).getName() + player.getSelectedItems().getItems().get(i).getAmount());
+            }*/
 
         }
 

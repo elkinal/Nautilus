@@ -268,10 +268,6 @@ public class Player implements Shape, Storage {
                     (this.inventory.getItems().get(i).getImagePath() +
                     " x" +
                     this.inventory.getItems().get(i).getName()), 650, i*50 + Main.HEIGHT/2-300);*/
-
-
-
-
 //                    gr.drawImage(ImageIO.read(new File(this.inventory.getItems().get(i).getImagePath())), Main.WIDTH / 2 - 350 + i * 100, Main.HEIGHT / 2 - 350 + 100 * control, 100, 100, null);
 
                 if(i % 5 == 0) {
@@ -279,12 +275,19 @@ public class Player implements Shape, Storage {
                     count = 0;
                 }
                 else count++;
-                gr.drawImage(this.inventory.getItems().get(i).getImageFile(), Main.WIDTH/2-350 + 50 + count*70, Main.HEIGHT/2-350 - 20 + 70*control, 70, 70, null);
-                gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 25 + 80 + count*70, Main.HEIGHT/2-350 + 5 + 70*control);
-                //drawing currently selected grid
-
-
-
+                gr.drawImage(this.inventory.getItems().get(i).getImageFile(), Main.WIDTH / 2 - 350 + 50 + count * 70, Main.HEIGHT / 2 - 350 - 20 + 70 * control, 70, 70, null);
+                gr.drawString(String.valueOf(this.inventory.getItems().get(i).getAmount()), Main.WIDTH / 2 - 350 + 25 + 80 + count * 70, Main.HEIGHT / 2 - 350 + 5 + 70 * control);
+        }
+        count = 0;
+        control = 0;
+        for (int i = 0; i < this.selectedItems.getItems().size(); i++) {
+            if(i % 3 == 0) {
+                control++;
+                count = 0;
+            }
+            else count++;
+            gr.drawImage(this.selectedItems.getItems().get(i).getImageFile(), Main.WIDTH/2-350 + count*70 + 10 + 430, Main.HEIGHT/2-350 + 70*control - 20, 70, 70, null);
+            gr.drawString(String.valueOf(this.selectedItems.getItems().get(i).getAmount()), Main.WIDTH/2-350 + 440 + 55 + count*70, Main.HEIGHT/2-350 + 5 + 70*control);
         }
     }
 }

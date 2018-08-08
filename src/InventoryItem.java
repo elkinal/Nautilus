@@ -19,8 +19,8 @@ public class InventoryItem {
     public InventoryItem(String name, int amount, BufferedImage imageFile, InventoryItem[] ingredients) {
         this.name = name;
         this.amount = amount;
-        this.ingredients = ingredients;
         this.imageFile = imageFile;
+        this.ingredients = ingredients;
     }
 
     public String getName() {
@@ -33,6 +33,9 @@ public class InventoryItem {
 
     public int getAmount() {
         return amount;
+    }
+    public void increaseAmount(int i) {
+        this.amount += i;
     }
 
     public void setAmount(int amount) {
