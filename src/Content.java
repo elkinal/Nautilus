@@ -2,22 +2,16 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.VolatileImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by alxye on 16-May-18.
  */
 
-public class Content extends JPanel implements ActionListener, KeyListener, MouseListener {
+public class Content extends JPanel implements ActionListener, KeyListener {
     private static Timer t;
     public static int tileSize = 70;
     private Random random = new Random();
@@ -27,8 +21,9 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     public static Level currentLevel = Levels.levelOne;
 
-    private DisplayController displayController = DisplayController.GAME;
-
+    private DisplayController displayController = DisplayController.MENU;
+    private byte selectedMenuOption = 0;
+    private int scannerRadius = 1;
     //experimental - "files"
 
     public ItemLibrary itemLibrary = new ItemLibrary(false); // TODO: 08-Aug-18 Tidy This Up
@@ -38,7 +33,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     public static File mediumPlantFile;
     public static File mediumPlant2File;
     public static File sandStylizedFile;
-
+    public static File flotationDeviceFile;
 
     public static BufferedImage seaweed;
     public static BufferedImage sandMedium;
@@ -47,6 +42,17 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     public static BufferedImage waterLight;
     public static BufferedImage mediumPlant;
     public static BufferedImage mediumPlant2;
+    public static BufferedImage flotationDevice;
+
+    public static BufferedImage menuOption1;
+    public static BufferedImage menuOption2;
+    public static BufferedImage menuOption3;
+    public static BufferedImage menuOption4;
+    public static BufferedImage menuWallpaper;
+    public static BufferedImage inventoryIndicator;
+    public static BufferedImage inventoryBackground;
+    public static BufferedImage menuTitle;
+    public static BufferedImage menuSelector;
 
     private int timerValue = 0;
 
@@ -70,12 +76,11 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
 
     public Content() {
-        t = new Timer(5, this);
+        t = new Timer(7, this);
         t.start();
         super.setDoubleBuffered(true);
         setFocusable(true);
         addKeyListener(this);
-        addMouseListener(this);
         setFocusTraversalKeysEnabled(false);
         loadImages();
         fillTerrain();
@@ -115,6 +120,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     }
 
+
     private void loadImages() {
         try {
 
@@ -123,14 +129,28 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             mediumPlantFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\cluster_coral.png");
             mediumPlant2File = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\dead_coral.png");
             sandStylizedFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\sand_medium.jpg");
+            flotationDeviceFile = new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\water_light.jpg");
+
 
             seaweed = ImageIO.read(seaweedFile);
             sandStylized = ImageIO.read(sandStylizedFile);
             coralStylized = ImageIO.read(coralFile);
             mediumPlant = ImageIO.read(mediumPlantFile);
             mediumPlant2 = ImageIO.read(mediumPlant2File);
+            flotationDevice = ImageIO.read(flotationDeviceFile);
+
+            menuOption1 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_option_1.png"));
+            menuOption2 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_option_2.png"));
+            menuOption3 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_option_3.png"));
+            menuOption4 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_option_4.png"));
+            menuWallpaper = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_wallpaper.png"));
+            inventoryIndicator = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\selector.png"));
+            inventoryBackground = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\inventory_background.png"));
+            menuTitle = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_title.png"));
+            menuSelector= ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_selector.png"));
 
             itemLibrary = new ItemLibrary(true);
+            itemLibrary.addIngredients();
 
 
         } catch (IOException e) {
@@ -173,21 +193,30 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                 }
             }
         }
+
+        // TODO: 11-Aug-18 Attempting to generate caves
+        /**
+         * The general idea of this is that a certain (random) tile will have a chance
+         * to turn into a "cave water" tile.
+         *
+         * This tile then has a chance to spread downwards, and sideways, creating a hollow
+         * passageway that will create a cave. Certain species of plants should be specific
+         * to the cave environment*/
+
+        /*for (int i = 0; i < currentLevel.getContent().length - 1; i++) {
+            for (int j = 0; j < currentLevel.getContent()[i].length - 1; j++) {
+                if(currentLevel.getContent()[i+1][j] == 1 && currentLevel.getContent()[i-1][j] == 0) {
+                    currentLevel.getContent()[i-1][j] = -1;
+                }
+            }
+        }*/
+
     }
     private int randInt(int min, int max) {
         return random.nextInt(max - min + 1) + min;
     }
 
-    public void paintComponent(Graphics g) {
-        Graphics2D graphics = (Graphics2D) g;
-        super.paintComponent(graphics);
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Set anti-alias for text
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-    if(displayController == DisplayController.GAME) {
+    private void drawTiles(Graphics2D graphics) {
         for (int i = 0; i < currentLevel.getContent().length; i++) {
             for (int j = 0; j < currentLevel.getContent()[i].length; j++) {
                 if (j + renderDistanceX > Math.abs(getCurrentLocationX()) && j - renderDistanceX < Math.abs(getCurrentLocationX()) &&
@@ -195,7 +224,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
                     /*if(currentLevel.getContent()[i][j] == -1)
                          g.drawImage(waterLight, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);*/
                     if (currentLevel.getContent()[i][j] == -1)
-                        g.fillRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
+                        graphics.fillRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
                     if (currentLevel.getContent()[i][j] == 1)
                         graphics.drawImage(sandStylized, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
                     if (currentLevel.getContent()[i][j] == 2)
@@ -209,9 +238,84 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
                 }
             }
+
+        }
+    }
+    private void drawScanner(Graphics2D graphics) {
+
+        for (int i = 0; i < currentLevel.getContent().length; i++) {
+            for (int j = 0; j < currentLevel.getContent()[i].length; j++) {
+                if (j + scannerRadius > Math.abs(getCurrentLocationX()) && j - scannerRadius < Math.abs(getCurrentLocationX()) &&
+                        i + scannerRadius > Math.abs(getCurrentLocationY()) && i - scannerRadius < Math.abs(getCurrentLocationY())) {
+                    if (currentLevel.getContent()[i][j] == 1)
+                        graphics.fillRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);
+
+                } //(x^2 + y^2) = radius^2
+            }
+
         }
 
+    }
 
+    public void paintComponent(Graphics g) {
+        Graphics2D graphics = (Graphics2D) g;
+        super.paintComponent(graphics);
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        // Set anti-alias for text
+        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+    if(displayController == DisplayController.GAME) {
+        drawTiles(graphics);
+        drawIndicators(graphics);
+
+
+        //drawing various markers
+        graphics.setColor(Color.green);
+        player.draw(graphics);
+        if (player.isTorchStatus()) { // FIXME: 29-Jul-18 - HURRY UP
+            drawScanner(graphics);
+            if(timerValue % 10 == 0)
+                scannerRadius++;
+            if(scannerRadius > 9)
+                scannerRadius = 0;
+        }
+
+        if (player.getShowInventory()) {
+            player.drawInventory(graphics);
+        }
+    }
+    //control the view of the inventory // TODO: 06-Aug-18 make this look nice | add dialogs and options
+    //menu here
+        if(displayController == DisplayController.MENU) {
+            drawMenu(graphics);
+            graphics.setColor(new Color(33, 0, 127));
+            graphics.drawRect(50, Main.HEIGHT - (500-selectedMenuOption*110), 500, 100);
+            graphics.drawImage(menuSelector, 550, Main.HEIGHT - (500-selectedMenuOption*110), 30, 100, null);
+        }
+        if(displayController == DisplayController.CREDITS) {
+            drawCredits(graphics);
+        }
+
+//        graphics.dispose(); //optional?
+    }
+
+    private void drawCredits(Graphics2D graphics) {
+        graphics.setFont(fontLarge);
+        graphics.drawString("The Credits will go here...", 100, 100);
+    }
+
+    private void drawMenu(Graphics2D graphics) {
+        graphics.drawImage(menuWallpaper, 0, 0, Main.WIDTH, Main.HEIGHT, null);
+        graphics.drawImage(menuTitle, Main.WIDTH/2 - 250, Main.HEIGHT/2 - 400, null);
+        graphics.drawImage(menuOption1, 50, Main.HEIGHT - 500, 500, 100, null);
+        graphics.drawImage(menuOption2, 50, Main.HEIGHT - 390, 500, 100, null);
+        graphics.drawImage(menuOption3, 50, Main.HEIGHT - 280, 500, 100, null);
+        graphics.drawImage(menuOption4, 50, Main.HEIGHT - 170, 500, 100, null);
+    }
+
+    private void drawIndicators(Graphics2D graphics) {
         graphics.setFont(fontSmall); //need to fix this
         if (depth < -200)
             graphics.setColor(Color.white);
@@ -219,41 +323,8 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             graphics.setColor(Color.black);
         graphics.drawString("Depth: " + depth, Main.WIDTH - 200, 50);
         graphics.drawString("Oxygen: " + player.getOxygen() + "/" + player.getMaxOxygen(), Main.WIDTH - 250, 100);
-
-        //drawing various markers
-        graphics.setColor(Color.green);
-        player.draw(graphics);
-        if (player.isTorchStatus()) { //the filter makes some game tiles blurry - // FIXME: 29-Jul-18 - HURRY UP
-            Point2D center = new Point2D.Float(player.getCenterX(), player.getCenterY());
-            float[] distance = {0.0f, 1.0f};
-            Color[] colors = {new Color(1.0f, 1.0f, 0.0f, 0.0f), filter.getColor()};
-            RadialGradientPaint p = new RadialGradientPaint(center, 300, distance, colors);
-
-            //torch status regulated here
-            graphics.setPaint(p);
-            graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1)); // set this to .95f
-//            graphics.setColor(filter.getColor());
-            graphics.fillRect(0, 0, Main.WIDTH, Main.HEIGHT);
-
-        } else {
-            filter.draw(graphics);
-        }
-
-
-        if (player.getShowInventory()) {
-            player.drawInventory(graphics);
-        }
-
-    }
-    //control the view of the inventory // TODO: 06-Aug-18 make this look nice | add dialogs and options
-    if(displayController == DisplayController.MENU) {
-        graphics.drawImage(sandStylized, 0, 0, Main.WIDTH, Main.HEIGHT, null);
-        graphics.setFont(fontLarge);
-        graphics.drawString("Nautilus", Main.WIDTH/2 -200 , Main.HEIGHT/2);
     }
 
-        graphics.dispose(); //optional?
-    }
     public static int getCurrentLocationY() {
         //YOffset - YPlayerOffset - literal cartesian displacement
         return (YOffset - YPlayerOffset-player.getSize()/2)/tileSize; //Y
@@ -314,55 +385,58 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
         //Player collision detection ___________________________________________________________________________
         //Collision detection system the same as in older project - needs more testing as there may be some issues...
         //The player morphs into tiles if he is travelling at a very high speed. Fix this // FIXME: 31-Jul-18
+        if(displayController == DisplayController.GAME) {
+            if (getTileType((XOffset - XPlayerOffset) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1 ||
+                    getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1) {
+                player.setVelY(0);
+                YOffset += 1;
+            } else if (getTileType((XOffset - XPlayerOffset) / tileSize, (YOffset - YPlayerOffset) / tileSize) == 1 ||
+                    getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset) / tileSize) == 1) {
+                player.setVelY(0);
+                YOffset -= 1;
+            }
+            if (getTileType((XOffset - XPlayerOffset) / tileSize, (YOffset - YPlayerOffset) / tileSize) == 1 ||
+                    getTileType((XOffset - XPlayerOffset) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1) {
+                player.setVelX(0);
+                XOffset -= 1;
 
-        if(getTileType((XOffset - XPlayerOffset)/tileSize,(YOffset - YPlayerOffset-player.getSize())/tileSize) == 1 ||
-                getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize,(YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
-            player.setVelY(0);
-            YOffset += 1;
-        }
-        else if(getTileType((XOffset - XPlayerOffset)/tileSize,(YOffset - YPlayerOffset)/tileSize) == 1 ||
-                getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize,(YOffset - YPlayerOffset)/tileSize) == 1) {
-            player.setVelY(0);
-            YOffset -= 1;
-        }
-        if(getTileType((XOffset - XPlayerOffset)/tileSize, (YOffset - YPlayerOffset)/tileSize) == 1 ||
-                getTileType((XOffset - XPlayerOffset)/tileSize, (YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
-            player.setVelX(0);
-            XOffset-=1;
+            } else if (getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset) / tileSize) == 1 ||
+                    getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1) {
+                player.setVelX(0);
+                XOffset += 1;
 
-        }
-        else if(getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize, (YOffset - YPlayerOffset)/tileSize) == 1 ||
-                getTileType((XOffset - XPlayerOffset-player.getSize())/tileSize, (YOffset - YPlayerOffset-player.getSize())/tileSize) == 1) {
-            player.setVelX(0);
-            XOffset+=1;
-
-        }
+            }
 
 
-        if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 2) {
-            player.getInventory().addItems(itemLibrary.getInventory()[5]);
-            currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
-        }
-        if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 3) {
-            player.getInventory().addItems(itemLibrary.getInventory()[0]);
-            currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
-        }
-        if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 4) {
-            player.getInventory().addItems(itemLibrary.getInventory()[3]);
-            currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
-        }
-        if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == 5) {
-            player.getInventory().addItems(itemLibrary.getInventory()[4]);
-            currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
-        }
-        //refilling oxygen if the player is in the presence of air
-        if(getTileType(getCurrentLocationX(), getCurrentLocationY()) == -1 && player.getOxygen() != player.getMaxOxygen()) {
-            player.setOxygen(player.getOxygen()+1);
-        }
-        XOffset += player.getVelX();
-        YOffset += player.getVelY();
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == 2) {
+                player.getInventory().addItems(itemLibrary.getInventory()[5]);
+                currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
+            }
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == 3) {
+                player.getInventory().addItems(itemLibrary.getInventory()[0]);
+                currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
+            }
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == 4) {
+                player.getInventory().addItems(itemLibrary.getInventory()[3]);
+                currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
+            }
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == 5) {
+                player.getInventory().addItems(itemLibrary.getInventory()[4]);
+                currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
+            }
+            //refilling oxygen if the player is in the presence of air
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == -1 && player.getOxygen() != player.getMaxOxygen()) {
+                player.setOxygen(player.getOxygen() + 1);
+            }
 
-        timerOperations();
+            /*if(depth > 0)
+                player.setVelY(-10);*/
+            // TODO: 11-Aug-18 Make sure that gravity affects the player if he is above the surface of the water
+            XOffset += player.getVelX();
+            YOffset += player.getVelY();
+
+            timerOperations();
+        }
         repaint();
         limitCheck();
 
@@ -380,6 +454,7 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
             if(depth < -100)
                  player.setOxygen(player.getOxygen()-2);
         }
+
         if(player.getOxygen() == 0)
             System.out.println("LOl u DIed M8ey");
     }
@@ -392,72 +467,142 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
     @Override
     public void keyPressed(KeyEvent e) {
         //motion for the player
-        if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-            player.setVelY(player.getVelY() - 1);
-            if(player.getVelY() > 0)
-                player.setVelY(0);
-        }
-        else if(e.getKeyCode() == KeyEvent.VK_UP) {
-            player.setVelY(player.getVelY() + 1);
-            if(player.getVelY() < 0)
-                player.setVelY(0);
-        }
-        else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            player.setVelX(player.getVelX() - 1);
-            if(player.getVelX() > 0)
-                player.setVelX(0);
-        }
-        else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-            player.setVelX(player.getVelX() + 1);
-            if(player.getVelX() < 0)
-                player.setVelX(0);
-        }
-        if(e.getKeyCode() == KeyEvent.VK_T) {
-            player.setTorchStatus(!player.isTorchStatus());
-        }
-        if(e.getKeyCode() == KeyEvent.VK_I) {
-            player.toggleInventory();
-        }
+        if(displayController == DisplayController.GAME) {
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                player.setVelY(player.getVelY() - 1);
+                if (player.getVelY() > 0)
+                    player.setVelY(0);
+            } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+                player.setVelY(player.getVelY() + 1);
+                if (player.getVelY() < 0)
+                    player.setVelY(0);
+            } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                player.setVelX(player.getVelX() - 1);
+                if (player.getVelX() > 0)
+                    player.setVelX(0);
+            } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                player.setVelX(player.getVelX() + 1);
+                if (player.getVelX() < 0)
+                    player.setVelX(0);
+            }
+            if (e.getKeyCode() == KeyEvent.VK_T) {
+                scannerRadius = 0;
+                player.setTorchStatus(!player.isTorchStatus());
+            }
+            if (e.getKeyCode() == KeyEvent.VK_I) {
+                player.toggleInventory();
+            }
 
-        if(e.getKeyCode() == KeyEvent.VK_W && player.getSelectedItemY() > 0)
-            player.setSelectedItemY(player.getSelectedItemY() - 1);
-        if(e.getKeyCode() == KeyEvent.VK_A && player.getSelectedItemX() > 0)
-            player.setSelectedItemX(player.getSelectedItemX() - 1);
-        if(e.getKeyCode() == KeyEvent.VK_S && player.getSelectedItemY() < 7)
-            player.setSelectedItemY(player.getSelectedItemY() + 1);
-        if(e.getKeyCode() == KeyEvent.VK_D && player.getSelectedItemX() < 4)
-            player.setSelectedItemX(player.getSelectedItemX() + 1);
-        if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (e.getKeyCode() == KeyEvent.VK_W && player.getSelectedItemY() > 0)
+                player.setSelectedItemY(player.getSelectedItemY() - 1);
+            if (e.getKeyCode() == KeyEvent.VK_A && player.getSelectedItemX() > 0)
+                player.setSelectedItemX(player.getSelectedItemX() - 1);
+            if (e.getKeyCode() == KeyEvent.VK_S && player.getSelectedItemY() < 7)
+                player.setSelectedItemY(player.getSelectedItemY() + 1);
+            if (e.getKeyCode() == KeyEvent.VK_D && player.getSelectedItemX() < 4)
+                player.setSelectedItemX(player.getSelectedItemX() + 1);
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 
 //            System.out.println(player.getSelectedItemX() + 1 + " " + (player.getSelectedItemY() + 1));
 //            System.out.println("Tile Number" + (player.getSelectedItemY() * 5 + player.getSelectedItemX()));
 //            System.out.println(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName());
 //            int currentSelectedItem =
-            if(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getAmount() > 0) {
-                player.getSelectedItems().addItems(new InventoryItem(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName()
-                        ,
-                        1
-                        ,
-                        player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getImageFile()
-                ));
-                player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).increaseAmount(-1);
-            }
-            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
+                if (player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getAmount() > 0) {
+                    player.getSelectedItems().addItems(new InventoryItem(player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getName()
+                            ,
+                            1
+                            ,
+                            player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).getImageFile()
+                    ));
+                    player.getInventory().getItems().get(player.getSelectedItemY() * 5 + player.getSelectedItemX()).increaseAmount(-1);
+                }
+                for (int i = 0; i < player.getInventory().getItems().size(); i++) {
+                    if(player.getInventory().getItems().get(i).amount == 0) {
+                        player.getInventory().getItems().remove(i);
+                    }
+                }
+            /*for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
                 System.out.println(player.getSelectedItems().getItems().get(i).getName());
+            }*/
+                // FIXME: 05-Aug-18 Make sure that the item that has an "amount < 1" is removed
+                // FIXME: 05-Aug-18 Make sure that "player.selectedItems is compared to player.getItem.ingredients to check if an object can be crafted"
             }
-            // FIXME: 05-Aug-18 Make sure that the item that has an "amount < 1" is removed
-            // FIXME: 05-Aug-18 Make sure that "player.selectedItems is compared to player.getItem.ingredients to check if an object can be crafted"
-       /*     for (int i = 0; i < itemLibrary.getInventory().length; i++) {
-                if(itemLibrary.getInventory()[i] != null) //check if itemlibrary item has parameter getinventory
-                    System.out.println(Arrays.toString(itemLibrary.getInventory()[i].getIngredients()));
+            if (e.getKeyCode() == KeyEvent.VK_C) {
+            /*System.out.println("SELECTED ITEMS");
+            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
+                System.out.println(player.getSelectedItems().getItems().get(i));
+            }
+            System.out.println("POSSIBLE CRAFTEABLES");
+            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
+                if(Arrays.asList(itemLibrary.getInventory()[i]) == player.getSelectedItems().getItems().get(i)) {
+                    System.out.println(player.getSelectedItems().getItems().get(i).getName());
+                }
             }*/
-            
 
+            /*InventoryItem[] playerSelectedInventory = player.getSelectedItems().getItems().toArray(new InventoryItem[player.getSelectedItems().getItems().size()]);
+            for (int i = 0; i < itemLibrary.getInventory().length; i++) {
+                for (int j = 0; j < itemLibrary.getInventory()[i].getIngredients().length; j++) {
 
-/*            for (int i = 0; i < player.getSelectedItems().getItems().size(); i++) {
-                System.out.println(player.getSelectedItems().getItems().get(i).getName() + player.getSelectedItems().getItems().get(i).getAmount());
+                }
             }*/
+            /*int i = 0;
+            while(itemLibrary.getInventory()[i] == null) {
+                i++;
+            }*/
+                //potential algorithm
 
+            /*ArrayList<InventoryItem> crafteables = new ArrayList<>();
+
+            for (int i = 0; i < itemLibrary.getInventory().length; i++) {
+                if(itemLibrary.getInventory()[i].getIngredients() != null) {
+//                    System.out.println(itemLibrary.getInventory()[i].getName());
+                    crafteables.add(itemLibrary.getInventory()[i]);
+                }
+            }*/
+//            ArrayList<InventoryItem> selected = player.getSelectedItems().getItems();
+
+            /*for (int i = 0; i < crafteables.size(); i++) {
+                if(player.getSelectedItems().getItems().containsAll(Arrays.asList(crafteables.get(i).getIngredients())))
+                    System.out.println("Great Success");
+            }*/
+            /*if(player.getSelectedItems().getItems().containsAll(Arrays.asList(itemLibrary.getInventory()[2].getIngredients()))) {
+                System.out.println("success");
+            }*/
+            player.getInventory().getItems().remove(0);
+/*                System.out.println("Selected Items: " + player.getSelectedItems().getItems().toString());
+                System.out.println("Required Items: " + Arrays.asList(itemLibrary.getInventory()[2].getIngredients()).toString());
+                System.out.println("\n");
+                //for some reason the required items amount is always zero 000
+                //// FIXME: 09-Aug-18 the actual amount of items in the itemlibrary is decreasing - "increaseAmount" is to blame
+
+                System.out.println("The Inventory Contents:");
+                for (int i = 0; i < itemLibrary.getInventory().length; i++) {
+                    System.out.println(itemLibrary.getInventory()[i].toString());
+                } // TODO: 09-Aug-18 make AMOUNT FIELD OPTIONAL
+
+//            System.out.println("Crafting"); // FIXME: 08-Aug-18 CRAFTING SYSTEM*/
+            }
+        }
+        if(displayController == DisplayController.MENU) {
+            if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(selectedMenuOption == 0)
+                    displayController = DisplayController.GAME;
+                if(selectedMenuOption == 1)
+                    System.out.println("New Game");
+                if(selectedMenuOption == 2)
+                    displayController = DisplayController.OPTIONS;
+                if(selectedMenuOption == 3)
+                    displayController = DisplayController.CREDITS;
+
+            }
+            if(e.getKeyCode() == KeyEvent.VK_DOWN && selectedMenuOption < 3 || e.getKeyCode() == KeyEvent.VK_S && selectedMenuOption < 3)
+                selectedMenuOption++;
+            if(e.getKeyCode() == KeyEvent.VK_UP && selectedMenuOption > 0 || e.getKeyCode() == KeyEvent.VK_W && selectedMenuOption > 0)
+                selectedMenuOption--;
+        }
+        else {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+                displayController = DisplayController.MENU;
         }
 
 
@@ -469,28 +614,5 @@ public class Content extends JPanel implements ActionListener, KeyListener, Mous
 
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
 
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
 }

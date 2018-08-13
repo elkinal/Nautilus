@@ -242,7 +242,7 @@ public class Player implements Shape, Storage {
     @Override
     public void drawInventory(Graphics2D gr) {
         gr.setColor(new Color(0.3f, 0.5f, 0.7f, 0.8f));
-        gr.fillRect(Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700);
+        gr.drawImage(Content.inventoryBackground, Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700, null);
         gr.setColor(Color.green);
         //drawing the inventory grids
 
@@ -258,7 +258,7 @@ public class Player implements Shape, Storage {
             }
         }
         //drawing the item currently selected by the user
-        gr.drawOval(Main.WIDTH/2-350 + 50 + 70*this.selectedItemX, Main.HEIGHT/2-350 + 50 + 70*this.selectedItemY, 70, 70);
+        gr.drawImage(Content.inventoryIndicator, Main.WIDTH/2-350 + 50 + 70*this.selectedItemX, Main.HEIGHT/2-350 + 50 + 70*this.selectedItemY, 70, 70, null);
 
 
         int control = 0;

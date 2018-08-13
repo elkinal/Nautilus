@@ -4,12 +4,11 @@ import java.awt.image.VolatileImage;
  * Created by alxye on 26-Jul-18.
  */
 public class ItemLibrary {
-    InventoryItem[] inventory;
+    private InventoryItem[] inventory;
 
     public ItemLibrary(boolean init) { //make a separate array called "craftables to avoid the NullPointerException"
-        // TODO: 06-Aug-18 make a separate array called "craftables" to avoid the NullPointerException
         if(init) {
-            this.inventory = new InventoryItem[]{ // FIXME: 05-Aug-18 make sure that all items have appropriate ingredients
+            this.inventory = new InventoryItem[]{
                     new InventoryItem("Coral", 1, Content.coralStylized),
                     new InventoryItem("Fabricator", 1, Content.coralStylized),
                     new InventoryItem("Flotation Device", 1, Content.waterLight),// new InventoryItem[]{inventory[0], inventory[5]}),
@@ -19,13 +18,20 @@ public class ItemLibrary {
             };
         }
     }
-
+    // FIXME: 10-Aug-18 make sure the amount of all the inventoryItems is 0, and test the result
 
     public InventoryItem[] getInventory() {
-        return inventory;
+        return this.inventory;
     }
 
     public void setInventory(InventoryItem[] inventory) {
         this.inventory = inventory;
+    }
+
+    public void addIngredients() {
+        this.inventory[2].setIngredients(new InventoryItem[]{
+                this.inventory[0],
+                this.inventory[5]
+        });
     }
 }

@@ -1,5 +1,6 @@
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.util.Arrays;
 
 /**
  * Created by alxye on 19-Jul-18.
@@ -56,5 +57,14 @@ public class InventoryItem {
 
     public void setImageFile(BufferedImage imageFile) {
         this.imageFile = imageFile;
+    }
+
+    @Override
+    public String toString() {
+        return "InventoryItem{" +
+                "ingredients=" + Arrays.toString(ingredients) +
+                ", amount=" + amount +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

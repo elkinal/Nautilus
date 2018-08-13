@@ -4,5 +4,6 @@
 public enum DisplayController {
     MENU,
     OPTIONS,
-    GAME
+    GAME,
+    CREDITS
 }
