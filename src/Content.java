@@ -15,11 +15,12 @@ public class Content extends JPanel implements ActionListener, KeyListener {
     private static Timer t;
     public static int tileSize = 70;
     private Random random = new Random();
-    public static Player player = new Player(0,0,50, 0f, 0f, false, 100f, 50, 100, false, 0, 0);
+    public static Player player = new Player(0,0,50, 0f, 0f, false, 100f, 100, 100, false, 0, 0);
     private static float filterOpacity = 0.3f;
     public static Filter filter = new Filter(new Color(0.0f, 0.0f, 1.0f, filterOpacity));
 
     public static Level currentLevel = Levels.levelOne;
+    private static float gravity = 0.1f;
 
     private DisplayController displayController = DisplayController.MENU;
     private byte selectedMenuOption = 0;
@@ -43,6 +44,8 @@ public class Content extends JPanel implements ActionListener, KeyListener {
     public static BufferedImage mediumPlant;
     public static BufferedImage mediumPlant2;
     public static BufferedImage flotationDevice;
+    public static BufferedImage cavePlant1;
+    public static BufferedImage cavePlant2;
 
     public static BufferedImage menuOption1;
     public static BufferedImage menuOption2;
@@ -66,17 +69,20 @@ public class Content extends JPanel implements ActionListener, KeyListener {
     private static int XGridSize = (int) (tileSize * currentLevel.getContent()[0].length);
     private static int YGridSize = (int) (tileSize * currentLevel.getContent().length);
 //    public static int YOffset = (int) ((Main.HEIGHT + 8 * tileSize) / 2 - YGridSize + tileSize);
-//    public static int YOffset = Main.HEIGHT - YGridSize+tileSize*2;
-    public static int YOffset = Main.HEIGHT;
+    public static int YOffset = Main.HEIGHT-tileSize*9;
+//    public static int YOffset = Main.HEIGHT;
     public static int XOffset = Main.WIDTH / 2 - XGridSize / 2;
 
     public static int XPlayerOffset = Main.WIDTH / 2 - player.getSize() / 2;
     public static int YPlayerOffset = Main.HEIGHT / 2 - player.getSize() / 2;
     private static int depth = YOffset;
 
+    //FPS control
+    private long current;
+    private long last;
 
     public Content() {
-        t = new Timer(7, this);
+        t = new Timer(7, this); // FIXME: 13-Aug-18 ISSUE WITH INCONSISTENT FPS
         t.start();
         super.setDoubleBuffered(true);
         setFocusable(true);
@@ -148,6 +154,9 @@ public class Content extends JPanel implements ActionListener, KeyListener {
             inventoryBackground = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\inventory_background.png"));
             menuTitle = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_title.png"));
             menuSelector= ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\menu_selector.png"));
+            cavePlant1 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\cave_plant_1.png"));
+            cavePlant2 = ImageIO.read(new File("C:\\Users\\alxye\\Desktop\\NAUTILUS\\cave_plant_2.png"));
+
 
             itemLibrary = new ItemLibrary(true);
             itemLibrary.addIngredients();
@@ -171,10 +180,39 @@ public class Content extends JPanel implements ActionListener, KeyListener {
                 }
             }
         }
+        // TODO: 11-Aug-18 Attempting to generate caves
+        /**
+         * The general idea of this is that a certain (random) tile will have a chance
+         * to turn into a "cave water" tile.
+         *
+         * This tile then has a chance to spread downwards, and sideways, creating a hollow
+         * passageway that will create a cave. Certain species of plants should be specific
+         * to the cave environment*/
+
+        for (int i = 0; i < currentLevel.getContent().length - 1; i++) {
+            for (int j = 0; j < currentLevel.getContent()[i].length - 1; j++) {
+                if(currentLevel.getContent()[i+1][j] == 1 && currentLevel.getContent()[i-1][j] == 0 && randInt(0,100) == 0) {
+                    currentLevel.getContent()[i+1][j] = 7;
+                }
+            }
+        }
+        for (int i = 2; i < currentLevel.getContent().length - 2; i++) {
+            for (int j = 2; j < currentLevel.getContent()[i].length - 2; j++) {
+                if(currentLevel.getContent()[i+1][j] == 7 && i < currentLevel.getContent().length-10) {
+                    if(randInt(0,1) == 1) {
+                        currentLevel.getContent()[i + 2][j] = 7;
+                        currentLevel.getContent()[i + 2][j + 1] = 7;
+                        currentLevel.getContent()[i + 2][j - 1] = 7;
+                    }
+
+
+                }
+            }
+        }
         //adding plants
         for (int i = currentLevel.getContent().length-1; i >=0; i--) {
             for (int j = 0; j < currentLevel.getContent()[i].length-1; j++) {
-                if(currentLevel.getContent()[i][j] == 1) {
+                if(currentLevel.getContent()[i][j] == 1 && currentLevel.getContent()[i-1][j] != 7) {
                     if(randInt(0,2) == 2 && currentLevel.getContent()[i-1][j] != 1) {
                         if(randInt(0,1) == 1) {
                             currentLevel.getContent()[i - 1][j] = 2;
@@ -193,23 +231,20 @@ public class Content extends JPanel implements ActionListener, KeyListener {
                 }
             }
         }
-
-        // TODO: 11-Aug-18 Attempting to generate caves
-        /**
-         * The general idea of this is that a certain (random) tile will have a chance
-         * to turn into a "cave water" tile.
-         *
-         * This tile then has a chance to spread downwards, and sideways, creating a hollow
-         * passageway that will create a cave. Certain species of plants should be specific
-         * to the cave environment*/
-
-        /*for (int i = 0; i < currentLevel.getContent().length - 1; i++) {
+        //creating cave mushrooms
+        for (int i = 0; i < currentLevel.getContent().length - 1; i++) {
             for (int j = 0; j < currentLevel.getContent()[i].length - 1; j++) {
-                if(currentLevel.getContent()[i+1][j] == 1 && currentLevel.getContent()[i-1][j] == 0) {
-                    currentLevel.getContent()[i-1][j] = -1;
+                if(currentLevel.getContent()[i][j] == 7 && randInt(0, 8) == 0 && currentLevel.getContent()[i-1][j] == 1) {
+                    if(randInt(0,5) < 4)
+                        currentLevel.getContent()[i][j] = 6;
+                    else
+                        currentLevel.getContent()[i][j] = 8;
                 }
             }
-        }*/
+        }
+
+
+
 
     }
     private int randInt(int min, int max) {
@@ -235,6 +270,12 @@ public class Content extends JPanel implements ActionListener, KeyListener {
                         graphics.drawImage(mediumPlant, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
                     if (currentLevel.getContent()[i][j] == 5)
                         graphics.drawImage(mediumPlant2, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
+                    if (currentLevel.getContent()[i][j] == 6)
+                        graphics.drawImage(cavePlant1, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
+                    if (currentLevel.getContent()[i][j] == 8)
+                        graphics.drawImage(cavePlant2, j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize, null);
+                    /*if (currentLevel.getContent()[i][j] == 7)
+                        graphics.drawRect(j * tileSize + XOffset, i * tileSize + YOffset, tileSize, tileSize);*/
 
                 }
             }
@@ -242,7 +283,7 @@ public class Content extends JPanel implements ActionListener, KeyListener {
         }
     }
     private void drawScanner(Graphics2D graphics) {
-
+        graphics.setColor(new Color(0.3f, 1.0f, 0.3f, 0.8f));
         for (int i = 0; i < currentLevel.getContent().length; i++) {
             for (int j = 0; j < currentLevel.getContent()[i].length; j++) {
                 if (j + scannerRadius > Math.abs(getCurrentLocationX()) && j - scannerRadius < Math.abs(getCurrentLocationX()) &&
@@ -257,12 +298,14 @@ public class Content extends JPanel implements ActionListener, KeyListener {
 
     }
 
+
     public void paintComponent(Graphics g) {
         Graphics2D graphics = (Graphics2D) g;
         super.paintComponent(graphics);
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+        /*graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
         // Set anti-alias for text
+        */
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
@@ -381,15 +424,27 @@ public class Content extends JPanel implements ActionListener, KeyListener {
     public void actionPerformed(ActionEvent e) {
 
         update();
+        // TODO: 13-Aug-18 SHOW THE PLAYER'S CURRENT FPS
+/*
+        last = current;
+        current = System.currentTimeMillis();
+
+        System.out.println(1000/(current - last));*/
+
+
+
+
 //        System.out.println(player.getSelectedItems().getItems().size());
         //Player collision detection ___________________________________________________________________________
         //Collision detection system the same as in older project - needs more testing as there may be some issues...
-        //The player morphs into tiles if he is travelling at a very high speed. Fix this // FIXME: 31-Jul-18
+        //The player morphs into tiles if he is travelling at a very high speed. Fix this // 
+        // FIXME: 14-Aug-18 Collision SYstem is broken
         if(displayController == DisplayController.GAME) {
             if (getTileType((XOffset - XPlayerOffset) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1 ||
                     getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1) {
                 player.setVelY(0);
                 YOffset += 1;
+
             } else if (getTileType((XOffset - XPlayerOffset) / tileSize, (YOffset - YPlayerOffset) / tileSize) == 1 ||
                     getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset) / tileSize) == 1) {
                 player.setVelY(0);
@@ -404,7 +459,6 @@ public class Content extends JPanel implements ActionListener, KeyListener {
                     getTileType((XOffset - XPlayerOffset - player.getSize()) / tileSize, (YOffset - YPlayerOffset - player.getSize()) / tileSize) == 1) {
                 player.setVelX(0);
                 XOffset += 1;
-
             }
 
 
@@ -424,10 +478,28 @@ public class Content extends JPanel implements ActionListener, KeyListener {
                 player.getInventory().addItems(itemLibrary.getInventory()[4]);
                 currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 0;
             }
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == 6) {
+                player.getInventory().addItems(itemLibrary.getInventory()[6]);
+                currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 7;
+            }
+            if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == 8) {
+                player.getInventory().addItems(itemLibrary.getInventory()[7]);
+                currentLevel.getContent()[Math.abs(getCurrentLocationY())][Math.abs(getCurrentLocationX())] = 7;
+            }
             //refilling oxygen if the player is in the presence of air
             if (getTileType(getCurrentLocationX(), getCurrentLocationY()) == -1 && player.getOxygen() != player.getMaxOxygen()) {
                 player.setOxygen(player.getOxygen() + 1);
             }
+
+            //taking the physics into account - and calculating the player's stats
+
+            if(depth >= 0) {
+                player.incrementVelY(-gravity);
+            }
+
+
+
+
 
             /*if(depth > 0)
                 player.setVelY(-10);*/
@@ -444,6 +516,8 @@ public class Content extends JPanel implements ActionListener, KeyListener {
 
     }
 
+
+
     private void timerOperations() {
         //timer activation
         timerValue++;
@@ -454,6 +528,7 @@ public class Content extends JPanel implements ActionListener, KeyListener {
             if(depth < -100)
                  player.setOxygen(player.getOxygen()-2);
         }
+
 
         if(player.getOxygen() == 0)
             System.out.println("LOl u DIed M8ey");

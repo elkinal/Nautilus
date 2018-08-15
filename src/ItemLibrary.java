@@ -14,7 +14,9 @@ public class ItemLibrary {
                     new InventoryItem("Flotation Device", 1, Content.waterLight),// new InventoryItem[]{inventory[0], inventory[5]}),
                     new InventoryItem("Medium Plant 1", 1, Content.mediumPlant),
                     new InventoryItem("Medium Plant 2", 1, Content.mediumPlant2),
-                    new InventoryItem("Seaweed", 1, Content.seaweed)
+                    new InventoryItem("Seaweed", 1, Content.seaweed),
+                    new InventoryItem("Cave Plant 1", 1, Content.cavePlant1),
+                    new InventoryItem("Cave Plant 2", 1, Content.cavePlant2)
             };
         }
     }

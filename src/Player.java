@@ -61,6 +61,14 @@ public class Player implements Shape, Storage {
         this.velY = velY;
     }
 
+    public void incrementVelY(float i) {
+        this.velY += i;
+    }
+
+    public void incrementVelX(float i) {
+        this.velX += i;
+    }
+
     public int getX() {
         return x;
     }
@@ -236,6 +244,7 @@ public class Player implements Shape, Storage {
 
     @Override
     public void draw(Graphics2D gr) {
+        gr.setColor(Color.blue);
         gr.fillRect(Content.XPlayerOffset,Content.YPlayerOffset,this.size,this.size);
     }
 
@@ -243,7 +252,7 @@ public class Player implements Shape, Storage {
     public void drawInventory(Graphics2D gr) {
         gr.setColor(new Color(0.3f, 0.5f, 0.7f, 0.8f));
         gr.drawImage(Content.inventoryBackground, Main.WIDTH/2-350, Main.HEIGHT/2-350, 700, 700, null);
-        gr.setColor(Color.green);
+        gr.setColor(Color.blue);
         //drawing the inventory grids
 
 
